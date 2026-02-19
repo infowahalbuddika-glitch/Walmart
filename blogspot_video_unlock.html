@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exclusive Video Content</title>
+    <style>
+        /* 
+           --- GENERAL STYLES --- 
+           Basic page cleanup and font settings.
+        */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 
+           --- CONTAINER --- 
+           Keeps everything centered and contained.
+           Max-width ensures it looks good on mobile and desktop.
+        */
+        .content-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* 
+           --- VIDEO WRAPPER --- 
+           This handles the responsive video and the locking overlay.
+        */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            /* 16:9 Aspect Ratio */
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        /* The actual iframe for the video (YouTube, Vimeo, etc.) */
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 
+           --- LOCKED OVERLAY --- 
+           This covers the video until the user completes the tasks.
+        */
+        .locked-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+
+        /* 
+           --- AGE VERIFICATION OVERLAY ---
+           Hidden by default, shown after steps are done.
+        */
+        .age-msg-overlay {
+            display: none;
+            /* Hidden initially */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 20;
+            /* On top of locked overlay */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .age-msg-overlay.active {
+            display: flex;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .age-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .btn-yes {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-no {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .lock-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        /* 
+           --- BUTTONS AREA --- 
+        */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Design for the buttons/links */
+        .unlock-btn {
+            display: block;
+            background: #007bff;
+            /* Blue color */
+            color: white;
+            padding: 12px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .unlock-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        /* Style for when a button has been clicked */
+        .unlock-btn.clicked {
+            background: #28a745;
+            /* Green color */
+            pointer-events: none;
+            /* Prevent double clicking */
+            opacity: 0.8;
+        }
+
+        /* 
+           --- PROGRESS BAR --- 
+           Visual feedback for the user.
+        */
+        .progress-bar-container {
+            width: 100%;
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #28a745;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Utility class to hide elements */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="content-container">
+        <h2>Unlock Exclusive Video 1</h2>
+
+        <!-- Module 1 -->
+        <div class="unlock-module" data-required="5">
+            <!-- Progress Bar -->
+            <p>Complete the steps below to unlock: <span class="progress-text">0/5</span></p>
+            <div class="progress-bar-container">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+
+            <!-- Video Area with Locking Overlay -->
+            <div class="video-wrapper">
+                <!-- The Locked Overlay -->
+                <div class="locked-overlay">
+                    <div class="lock-icon">🔒</div>
+                    <h3>Video Locked</h3>
+                    <p>Complete the 5 steps below to watch.</p>
+                </div>
+
+                <!-- NEW: Age Verification Overlay -->
+                <div class="age-msg-overlay">
+                    <div class="lock-icon">🔞</div>
+                    <h3>Age Verification</h3>
+                    <p>This content is restricted to viewers 18+.</p>
+                    <p>Are you over 18 years old?</p>
+                    <div class="btn-group">
+                        <button class="age-btn btn-yes" onclick="handleAgeCheck(this, true)">Yes, I'm 18+</button>
+                        <button class="age-btn btn-no" onclick="handleAgeCheck(this, false)">No</button>
+                    </div>
+                </div>
+
+                <!-- 
+                    VIDEO SOURCE 1
+                -->
+                <iframe width="560" height="315" src="https://www.dailymotion.com/embed/video/k1sAVX0D1byx3LEXT9O"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
+
+            <!-- Links / Buttons -->
+            <div class="steps-container">
+                <a href="https://omg10.com/4/10629818" target="_blank" class="unlock-btn"
+                    onclick="registerClick(this)">1. Click
+                    The
+                    Button 01 To Unlock the Video</a>
+                <a href="https://omg10.com/4/10629813" target="_blank" class="unlock-btn"
+                    onclick="registerClick(this)">2. Click
+                    The
+                    Button 02 To Unlock the Video</a>
+                <a href="hhttps://omg10.com/4/10629812" target="_blank" class="unlock-btn"
+                    onclick="registerClick(this)">3.
+                    Click
+                    The
+                    Button 03 To Unlock the Video</a>
+                <a href="https://omg10.com/4/10629809" target="_blank" class="unlock-btn"
+                    onclick="registerClick(this)">4. Click
+                    The
+                    Button 04 To Unlock the Video</a>
+                <a href="https://omg10.com/4/10586114" target="_blank" class="unlock-btn"
+                    onclick="registerClick(this)">5. Click
+                    The
+                    Button 05 To Unlock the Video</a>
+            </div>
+        </div>
+
+        <hr style="margin: 40px 0; border: 0; border-top: 1px solid #ccc;">
+
+        <h2>Unlock Exclusive Video 2</h2>
+
+        <!-- Module 2 -->
+        <div class="unlock-module" data-required="5">
+            <!-- Progress Bar -->
+            <p>Complete the steps below to unlock: <span class="progress-text">0/5</span></p>
+            <div class="progress-bar-container">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+
+            <!-- Video Area with Locking Overlay -->
+            <div class="video-wrapper">
+                <!-- The Locked Overlay -->
+                <div class="locked-overlay">
+                    <div class="lock-icon">🔒</div>
+                    <h3>Video Locked</h3>
+                    <p>Complete the 5 steps below to watch.</p>
+                </div>
+
+                <!-- NEW: Age Verification Overlay -->
+                <div class="age-msg-overlay">
+                    <div class="lock-icon">🔞</div>
+                    <h3>Age Verification</h3>
+                    <p>This content is restricted to viewers 18+.</p>
+                    <p>Are you over 18 years old?</p>
+                    <div class="btn-group">
+                        <button class="age-btn btn-yes" onclick="handleAgeCheck(this, true)">Yes, I'm 18+</button>
+                        <button class="age-btn btn-no" onclick="handleAgeCheck(this, false)">No</button>
+                    </div>
+                </div>
+
+                <!-- 
+                    VIDEO SOURCE 2
+                    (Using a different video ID for demonstration)
+                -->
+                <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
+
+            <!-- Links / Buttons -->
+            <div class="steps-container">
+                <a href="https://google.com" target="_blank" class="unlock-btn" onclick="registerClick(this)">1. Click
+                    The
+                    Button 01 To Unlock the Video</a>
+                <a href="https://facebook.com" target="_blank" class="unlock-btn" onclick="registerClick(this)">2. Click
+                    The
+                    Button 02 To Unlock the Video</a>
+                <a href="https://instagram.com" target="_blank" class="unlock-btn" onclick="registerClick(this)">3.
+                    Click
+                    The
+                    Button 03 To Unlock the Video</a>
+                <a href="https://twitter.com" target="_blank" class="unlock-btn" onclick="registerClick(this)">4. Click
+                    The
+                    Button 04 To Unlock the Video</a>
+                <a href="https://example.com" target="_blank" class="unlock-btn" onclick="registerClick(this)">5. Click
+                    The
+                    Button 05 To Unlock the Video</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* 
+           --- CONFIGURATION --- 
+           Logic to track clicks and unlock the video.
+           Now supports multiple independent modules.
+        */
+
+        // Function called when a button is clicked
+        function registerClick(element) {
+            // Check if this specific button was already clicked
+            if (element.classList.contains('clicked')) {
+                return; // Do nothing if already clicked
+            }
+
+            // Find the parent module for this button
+            const module = element.closest('.unlock-module');
+            if (!module) return;
+
+            // Mark button as clicked visually
+            element.classList.add('clicked');
+            element.innerHTML = element.innerHTML + " (Done ✅)";
+
+            // Calculate current progress for THIS module
+            const totalRequired = parseInt(module.getAttribute('data-required') || 5);
+            const clickedButtons = module.querySelectorAll('.unlock-btn.clicked').length;
+
+            // Update Progress Bar for THIS module
+            updateProgress(module, clickedButtons, totalRequired);
+
+            // Check if we reached the target
+            if (clickedButtons >= totalRequired) {
+                // CHANGED: Instead of unlocking immediately, show age check
+                showAgeCheck(module);
+            }
+        }
+
+        // updates the visual progress bar for a specific module
+        function updateProgress(module, count, total) {
+            const percentage = (count / total) * 100;
+
+            // Find elements within the specific module
+            const fill = module.querySelector('.progress-fill');
+            const text = module.querySelector('.progress-text');
+
+            if (fill) fill.style.width = percentage + '%';
+            if (text) text.innerText = count + '/' + total;
+        }
+
+        // Shows the age verification overlay
+        function showAgeCheck(module) {
+            const ageOverlay = module.querySelector('.age-msg-overlay');
+            if (ageOverlay) {
+                ageOverlay.classList.add('active');
+            }
+        }
+
+        // Handles the Yes/No buttons in the age verification logic
+        function handleAgeCheck(button, isAdult) {
+            const module = button.closest('.unlock-module');
+
+            if (isAdult) {
+                // If Yes (18+), unlock the video
+                unlockVideo(module);
+                // Hide the age overlay
+                const ageOverlay = module.querySelector('.age-msg-overlay');
+                if (ageOverlay) ageOverlay.classList.remove('active');
+            } else {
+                // If No, reload the page (reset everything)
+                // Or redirect, per user request "back in the site" -> usually implies leaving or resetting
+                alert("You must be 18+ to view this content.");
+                location.reload();
+            }
+        }
+
+        // Unlocks the overlay to reveal the video for a specific module
+        function unlockVideo(module) {
+            const overlay = module.querySelector('.locked-overlay');
+            if (!overlay) return;
+
+            // Fade out effect
+            overlay.style.opacity = '0';
+
+            // Remove it from the DOM after the fade is done (500ms matches CSS transition)
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+        }
+    </script>
+</body>
+
+</html>
